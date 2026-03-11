@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Github, Star, GitFork, Eye, Users, Calendar, Mail } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LanguageBadge, getRepositoryLanguages } from '@/components/LanguageBadge';
 
 interface UserProfile {
   login: string;
@@ -258,6 +259,13 @@ export default function Home() {
                       {repo.description || 'No description available'}
                     </p>
 
+                    {/* Language Badges */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {getRepositoryLanguages(repo.name).map((language) => (
+                        <LanguageBadge key={language} language={language} size="sm" />
+                      ))}
+                    </div>
+
                     <div className="flex items-center justify-between pt-4 border-t border-slate-200">
                       <span className="text-sm text-slate-500">
                         Updated {formatDate(repo.updatedAt)}
@@ -309,6 +317,10 @@ export default function Home() {
         .animate-fade-in-up {
           animation: fade-in-up 0.6s ease-out forwards;
           opacity: 0;
+        }
+
+        span[title]:hover {
+          transform: scale(1.1);
         }
       `}</style>
     </div>
