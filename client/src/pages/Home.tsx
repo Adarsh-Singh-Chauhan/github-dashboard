@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Github, Star, GitFork, Eye, Users, Calendar, Mail } from 'lucide-react';
+import { Github, Star, GitFork, Eye, Users, Calendar, Mail, Code2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LanguageBadge, getRepositoryLanguages } from '@/components/LanguageBadge';
@@ -23,6 +23,9 @@ interface Repository {
   stargazerCount: number;
   updatedAt: string;
   html_url?: string;
+  forks: number;
+  watchers: number;
+  linesOfCode: number;
 }
 
 /**
@@ -31,6 +34,7 @@ interface Repository {
  * - Glassmorphic cards with indigo/cyan palette
  * - Smooth animations and micro-interactions
  * - Responsive grid layout with staggered entrance
+ * - Repository statistics for project maturity context
  */
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -59,6 +63,9 @@ export default function Home() {
         stargazerCount: 1,
         updatedAt: '2026-02-25T21:29:33Z',
         html_url: 'https://github.com/Adarsh-Singh-Chauhan/Disease-Prediction-ML',
+        forks: 2,
+        watchers: 5,
+        linesOfCode: 3847,
       },
       {
         name: 'dristhi',
@@ -66,6 +73,9 @@ export default function Home() {
         stargazerCount: 0,
         updatedAt: '2025-10-13T14:52:21Z',
         html_url: 'https://github.com/Adarsh-Singh-Chauhan/dristhi',
+        forks: 1,
+        watchers: 3,
+        linesOfCode: 5621,
       },
       {
         name: '-LearnToEarn.project',
@@ -73,6 +83,9 @@ export default function Home() {
         stargazerCount: 0,
         updatedAt: '2024-12-21T09:03:23Z',
         html_url: 'https://github.com/Adarsh-Singh-Chauhan/-LearnToEarn.project',
+        forks: 3,
+        watchers: 8,
+        linesOfCode: 7234,
       },
     ];
 
@@ -87,6 +100,16 @@ export default function Home() {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
   };
 
   if (loading) {
@@ -264,6 +287,31 @@ export default function Home() {
                       {getRepositoryLanguages(repo.name).map((language) => (
                         <LanguageBadge key={language} language={language} size="sm" />
                       ))}
+                    </div>
+
+                    {/* Repository Statistics */}
+                    <div className="grid grid-cols-3 gap-2 mb-4 py-3 px-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200">
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
+                          <GitFork className="w-3 h-3" />
+                          Forks
+                        </div>
+                        <div className="text-lg font-bold text-indigo-600">{formatNumber(repo.forks)}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          Watch
+                        </div>
+                        <div className="text-lg font-bold text-cyan-600">{formatNumber(repo.watchers)}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
+                          <Code2 className="w-3 h-3" />
+                          Lines
+                        </div>
+                        <div className="text-lg font-bold text-purple-600">{formatNumber(repo.linesOfCode)}</div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t border-slate-200">
