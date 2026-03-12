@@ -3,6 +3,7 @@ import { Github, Star, GitFork, Eye, Users, Calendar, Mail, Code2 } from 'lucide
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LanguageBadge, getRepositoryLanguages } from '@/components/LanguageBadge';
+import { useAuth } from '@/_core/hooks/useAuth';
 
 interface UserProfile {
   login: string;
@@ -35,11 +36,13 @@ interface Repository {
  * - Smooth animations and micro-interactions
  * - Responsive grid layout with staggered entrance
  * - Repository statistics for project maturity context
+ * - Stripe payment integration ready
  */
 export default function Home() {
+  const { user: authUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [repos, setRepos] = useState<Repository[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Fetch GitHub data from the report
@@ -91,7 +94,7 @@ export default function Home() {
 
     setProfile(mockProfile);
     setRepos(mockRepos);
-    setLoading(false);
+    setIsLoading(false);
   }, []);
 
   const formatDate = (dateString: string) => {
@@ -112,7 +115,7 @@ export default function Home() {
     return num.toString();
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
