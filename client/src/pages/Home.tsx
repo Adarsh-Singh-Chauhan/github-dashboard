@@ -263,7 +263,7 @@ function RepoCard({ repo, index }: { repo: GitHubRepository; index: number }) {
 
 function LoadingDashboard() {
   return (
-    <main className="page-shell">
+    <main className="page-shell" id="top">
       <div className="loading-top"><div className="loading-mark" /><div className="loading-line" /></div>
       <div className="loading-hero skeleton" />
       <div className="loading-stats">{[1, 2, 3, 4].map((item) => <div className="skeleton" key={item} />)}</div>
@@ -282,7 +282,12 @@ export default function Home() {
   const [sortMode, setSortMode] = useState<"recent" | "stars">("recent");
 
   const loadDashboard = useCallback(async (force = false) => {
-    const cached = !force ? sessionStorage.getItem(CACHE_KEY) : null;
+    let cached: string | null = null;
+    try {
+      cached = !force ? window.sessionStorage.getItem(CACHE_KEY) : null;
+    } catch {
+      // Continue with a fresh API request when browser storage is unavailable.
+    }
     if (cached) {
       try {
         const parsed = JSON.parse(cached) as { savedAt: number; data: DashboardData };
@@ -293,7 +298,7 @@ export default function Home() {
           return;
         }
       } catch {
-        sessionStorage.removeItem(CACHE_KEY);
+        try { window.sessionStorage.removeItem(CACHE_KEY); } catch { /* storage is optional */ }
       }
     }
 
@@ -341,7 +346,7 @@ export default function Home() {
 
       setData(next);
       setError(null);
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: next }));
+      try { window.sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: next })); } catch { /* storage is optional */ }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load GitHub data.");
     } finally {
