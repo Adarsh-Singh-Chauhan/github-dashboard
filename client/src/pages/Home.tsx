@@ -117,13 +117,18 @@ const skillGroups = [
 ];
 
 const stack = [
-  "TypeScript", "JavaScript", "Python", "C++", "React", "Next.js",
-  "Node.js", "NestJS", "FastAPI", "PostgreSQL", "MySQL", "Supabase",
-  "Docker", "AWS", "Git", "GitHub Actions",
+  "JavaScript", "TypeScript", "Python", "React", "Node.js", "Next.js",
+  "REST APIs", "PostgreSQL", "MySQL", "Supabase", "Docker", "AWS",
+  "Git", "GitHub Actions", "Software Testing",
 ];
 
 const projectDescriptions: Record<string, string> = {
-  DOCFORGE: "Document conversion and processing workflows, OCR, PDF extraction and AI-assisted retrieval.",
+  DOCFORGE: "A document workflow platform for batch conversion, OCR, PDF extraction and AI-assisted retrieval.",
+  "e-Setu": "An agriculture and market-linkage platform connecting farmers, markets and field inspection workflows.",
+  GAssist: "A government information platform bringing official repositories, personal documents and AI assistance together.",
+  PTrack: "A student-focused tracking and safety platform connecting institutions, students, teachers and parents.",
+  CTrack: "A GPS and fleet tracking platform with operational monitoring and location-based workflows.",
+  "Student Tracking Management System": "A student-first safety and engagement concept with attendance, alerts, communication and parent visibility.",
   PREPIQ: "An AI-assisted career preparation product covering interview practice and guided learning.",
   CyberSentric: "A cybersecurity-focused project exploring anomaly detection and intelligent response workflows.",
   "NEXA---Multimodal-Web-Data-Agent": "A multimodal web data agent built around modern AI application workflows.",
@@ -419,16 +424,16 @@ export default function Home() {
       <section className="hero-section" id="overview">
         <div className="hero-grid-lines" aria-hidden="true" />
         <div className="hero-copy">
-          <div className="eyebrow"><span className="eyebrow-dot" /> SOFTWARE ENGINEERING / PROFILE 001</div>
-          <div className="hero-kicker">Build with intent. Ship with care.</div>
+          <div className="eyebrow"><span className="eyebrow-dot" /> SOFTWARE ENGINEERING / BHOPAL, INDIA</div>
+          <div className="hero-kicker">Thoughtful engineering. Useful software.</div>
           <h1>{profileName}<span className="hero-period">.</span></h1>
-          <div className="hero-role">SOFTWARE DEVELOPMENT ENGINEER <span>·</span> SOFTWARE ENGINEER</div>
+          <div className="hero-role">FULL-STACK DEVELOPER <span>·</span> SOFTWARE ENGINEERING</div>
           <p className="hero-description">
-            I build practical digital products across full-stack engineering, AI-enabled applications and software quality.
-            Interested in the details that make software useful, reliable and ready to ship.
+            I turn practical requirements into reliable web applications, APIs and admin tools. My work spans product development,
+            AI-enabled workflows, software testing and deployment—with attention to the small details that make products dependable.
           </p>
           <div className="hero-focus">
-            <span>FULL-STACK</span><i /> <span>AI &amp; ML</span><i /> <span>AUTOMATION</span><i /> <span>CYBERSECURITY</span>
+            <span>PRODUCT DEVELOPMENT</span><i /> <span>AI APPLICATIONS</span><i /> <span>SOFTWARE QUALITY</span><i /> <span>CLOUD</span>
           </div>
           <div className="hero-actions">
             <a className="button button-primary" href={GITHUB} target="_blank" rel="noreferrer"><Github size={16} /> Explore GitHub <ArrowUpRight size={14} /></a>
@@ -440,7 +445,7 @@ export default function Home() {
         <div className="profile-console">
           <div className="console-top">
             <div className="console-lights"><i /><i /><i /></div>
-            <span>profile.runtime</span>
+            <span>engineering.profile</span>
             <span className="console-live"><i /> SYNCED</span>
           </div>
           <div className="profile-identity">
@@ -457,9 +462,9 @@ export default function Home() {
           <div className="console-divider" />
           <div className="console-code">
             <span className="code-muted">const developer = {"{"}</span>
-            <span><em>role</em>: <b>"Software Development Engineer"</b>,</span>
-            <span><em>focus</em>: <b>["Full-stack", "AI", "Quality"]</b>,</span>
-            <span><em>workflow</em>: <b>["plan", "build", "test", "ship"]</b></span>
+            <span><em>role</em>: <b>"Full-stack Developer"</b>,</span>
+            <span><em>focus</em>: <b>["Product", "AI", "Quality"]</b>,</span>
+            <span><em>workflow</em>: <b>["understand", "build", "validate", "ship"]</b></span>
             <span className="code-muted">{"}"};</span>
           </div>
           <div className="console-bottom">
@@ -569,10 +574,10 @@ export default function Home() {
         <div className="journey-grid">
           <article className="journey-card">
             <span className="journey-icon"><BriefcaseBusiness size={18} /></span>
-            <div className="journey-meta">MAY — OCT 2026</div>
-            <h3>SDE Intern · CONORG</h3>
-            <p>Software and web application development, functional and regression testing, defect tracking, deployment support and technical documentation.</p>
-            <span className="journey-status"><Check size={12} /> Internship completed</span>
+            <div className="journey-meta">SOFTWARE DELIVERY / CONORG</div>
+            <h3>Software Engineering · CONORG</h3>
+            <p>Worked across digital platforms including e-Setu, GAssist and CTrack—covering application workflows, functional testing, defect tracking, deployment coordination and technical documentation.</p>
+            <span className="journey-status"><Check size={12} /> Product &amp; delivery experience</span>
           </article>
           <article className="journey-card">
             <span className="journey-icon"><GraduationCap size={19} /></span>
@@ -583,10 +588,10 @@ export default function Home() {
           </article>
           <article className="journey-card">
             <span className="journey-icon"><Sparkles size={18} /></span>
-            <div className="journey-meta">CURRENT INTERESTS</div>
-            <h3>Build, test, improve</h3>
-            <p>Full-stack systems, AI applications, agentic automation, cybersecurity and cloud delivery—with AI-assisted prototyping and engineering review.</p>
-            <span className="journey-status">Always learning</span>
+            <div className="journey-meta">INDEPENDENT BUILDS / FREELANCE</div>
+            <h3>From idea to working product</h3>
+            <p>Building web experiences, dashboards and practical software tools while sharpening skills in full-stack development, AI integration, cloud deployment and client delivery.</p>
+            <span className="journey-status">Building in public</span>
           </article>
         </div>
       </section>
