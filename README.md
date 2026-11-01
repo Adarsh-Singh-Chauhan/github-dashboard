@@ -36,7 +36,7 @@ The interface uses clear hierarchy, restrained colour, readable project cards an
 | --- | --- |
 | Frontend | React 19, TypeScript, Vite |
 | Styling | Tailwind CSS 4, custom CSS |
-| Interaction | Framer Motion, CSS transitions |
+| Interaction | CSS animations, transitions and accessible micro-interactions |
 | Icons | Lucide React |
 | Data | GitHub REST API |
 | Deployment | Vercel |
