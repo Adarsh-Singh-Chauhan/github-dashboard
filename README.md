@@ -2,14 +2,17 @@
 
 # Adarsh Singh Chauhan · GitHub Dashboard
 
-A clean, live dashboard for my public GitHub profile, repositories, languages and recent activity.
-
+[![Live Dashboard](https://img.shields.io/badge/OPEN%20LIVE%20DASHBOARD-Visit%20Vercel-9BCB70?style=for-the-badge&logo=vercel&logoColor=111111)](https://github-dashboard-olive-one.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Adarsh--Singh--Chauhan-161b22?style=flat&logo=github)](https://github.com/Adarsh-Singh-Chauhan)
 [![Live data](https://img.shields.io/badge/Data-GitHub%20Public%20API-2f855a?style=flat&logo=github)](https://docs.github.com/en/rest)
 [![Built with React](https://img.shields.io/badge/Built%20with-React%2019-149eca?style=flat&logo=react)](https://react.dev/)
 [![Deployed on Vercel](https://img.shields.io/badge/Deploy-Vercel-111111?style=flat&logo=vercel)](https://vercel.com/)
 
+**Live URL:** https://github-dashboard-olive-one.vercel.app/
+
 </div>
+
+A live view of my public GitHub profile, repositories, languages and recent activity.
 
 ---
 
@@ -67,9 +70,14 @@ The Vite frontend is generated in `dist/public`. The dashboard uses public GitHu
 
 ## Deployment
 
-Production is built as a static Vite site on Vercel. Git integration deploys the configured production branch automatically after each push.
+Production is built as a static Vite site on Vercel and is connected to this GitHub repository.
 
-**Live dashboard:** add the Vercel URL here after the first successful deployment.
+- **Production URL:** https://github-dashboard-olive-one.vercel.app/
+- **Branch:** `main`
+- **Build:** `pnpm run build`
+- **Output:** `dist/public`
+
+Vercel creates production deployments from the latest GitHub `main` commit. The frontend uses GitHub's public REST API; private repository data is not requested.
 
 ---
 
