@@ -1,379 +1,598 @@
-import { useEffect, useState } from 'react';
-import { Github, Star, GitFork, Eye, Users, Calendar, Mail, Code2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { LanguageBadge, getRepositoryLanguages } from '@/components/LanguageBadge';
-import { useAuth } from '@/_core/hooks/useAuth';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  BriefcaseBusiness,
+  CalendarDays,
+  Check,
+  ChevronRight,
+  CircleDot,
+  Clock3,
+  Code2,
+  Cloud,
+  ExternalLink,
+  GitBranch,
+  GitFork,
+  Github,
+  Globe2,
+  GraduationCap,
+  Layers3,
+  Linkedin,
+  Mail,
+  MapPin,
+  Monitor,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Terminal,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
 
-interface UserProfile {
+const USERNAME = "Adarsh-Singh-Chauhan";
+const GITHUB = "https://github.com/Adarsh-Singh-Chauhan";
+const LINKEDIN = "https://www.linkedin.com/in/adarsh-singh-5189b9283/";
+const EMAIL = "adarshsinghchauhan904@gmail.com";
+const CACHE_KEY = "asc-github-dashboard-v2";
+const CACHE_TTL = 5 * 60 * 1000;
+
+interface GitHubProfile {
   login: string;
-  name: string;
+  name: string | null;
   avatar_url: string;
-  bio: string;
-  email: string;
+  bio: string | null;
+  html_url: string;
   followers: number;
   following: number;
   public_repos: number;
   created_at: string;
-  html_url: string;
+  location: string | null;
 }
 
-interface Repository {
+interface GitHubRepository {
+  id: number;
   name: string;
-  description: string;
-  stargazerCount: number;
-  updatedAt: string;
-  html_url?: string;
-  forks: number;
-  watchers: number;
-  linesOfCode: number;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  homepage: string | null;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  watchers_count: number;
+  open_issues_count: number;
+  updated_at: string;
+  pushed_at: string;
+  fork: boolean;
+  archived: boolean;
+  topics: string[];
+  languages_url: string;
 }
 
-/**
- * GitHub Dashboard Home Page
- * Design: Modern Dashboard Elegance
- * - Glassmorphic cards with indigo/cyan palette
- * - Smooth animations and micro-interactions
- * - Responsive grid layout with staggered entrance
- * - Repository statistics for project maturity context
- * - Stripe payment integration ready
- */
+interface GitHubEvent {
+  id: string;
+  type: string;
+  created_at: string;
+  repo: { name: string };
+  payload: {
+    size?: number;
+    ref_type?: string;
+    action?: string;
+    commits?: { message: string }[];
+  };
+}
+
+interface LanguageStat {
+  name: string;
+  bytes: number;
+}
+
+interface DashboardData {
+  profile: GitHubProfile;
+  repositories: GitHubRepository[];
+  events: GitHubEvent[];
+  languages: LanguageStat[];
+  fetchedAt: string;
+}
+
+const skillGroups = [
+  {
+    label: "Product engineering",
+    items: ["Full-stack development", "Frontend engineering", "Backend systems", "REST APIs"],
+  },
+  {
+    label: "AI & automation",
+    items: ["AI applications", "Machine learning", "Agentic workflows", "Vibe coding"],
+  },
+  {
+    label: "Quality & delivery",
+    items: ["Software testing", "Cybersecurity", "Cloud deployment", "CI/CD"],
+  },
+];
+
+const stack = [
+  "TypeScript", "JavaScript", "Python", "C++", "React", "Next.js",
+  "Node.js", "NestJS", "FastAPI", "PostgreSQL", "MySQL", "Supabase",
+  "Docker", "AWS", "Git", "GitHub Actions",
+];
+
+const projectDescriptions: Record<string, string> = {
+  DOCFORGE: "Document conversion and processing workflows, OCR, PDF extraction and AI-assisted retrieval.",
+  PREPIQ: "An AI-assisted career preparation product covering interview practice and guided learning.",
+  CyberSentric: "A cybersecurity-focused project exploring anomaly detection and intelligent response workflows.",
+  "NEXA---Multimodal-Web-Data-Agent": "A multimodal web data agent built around modern AI application workflows.",
+  unisathi: "A role-based campus product concept for students and their wider academic community.",
+  "hackverse-ai": "An AI-enabled hackathon ecosystem for collaboration, evaluation and event workflows.",
+  "build-ship-survive-hackathon-simulator": "An interactive hackathon simulation focused on product decisions and delivery.",
+  "Disease-Prediction-ML": "A machine-learning project exploring disease prediction and classification.",
+};
+
+const languageColors: Record<string, string> = {
+  TypeScript: "#4d9de0",
+  JavaScript: "#e7c85a",
+  Python: "#64a5dc",
+  Java: "#df8758",
+  HTML: "#e77b56",
+  CSS: "#9b83dc",
+  "C++": "#8a9de8",
+  C: "#8b98a9",
+  "C#": "#78b87a",
+  Go: "#4ab9cf",
+  Rust: "#d18a69",
+  PHP: "#9a8ac8",
+  Shell: "#85ba7a",
+};
+
+const number = (value: number) =>
+  new Intl.NumberFormat("en-IN", { notation: value >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(value);
+
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
+
+const relativeDate = (value: string) => {
+  const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
+  const minutes = Math.floor(elapsed / 60000);
+  if (minutes < 60) return minutes <= 1 ? "just now" : `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return formatDate(value);
+};
+
+async function githubGet<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(url, {
+    signal,
+    headers: { Accept: "application/vnd.github+json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error("GitHub rate limit reached. Please try again in a few minutes.");
+    }
+    throw new Error(`GitHub API returned ${response.status} for ${url.split("/").slice(-1)[0]}.`);
+  }
+
+  return (await response.json()) as T;
+}
+
+function eventDescription(event: GitHubEvent) {
+  const repo = event.repo.name.split("/").pop() || event.repo.name;
+  const count = event.payload.size || event.payload.commits?.length || 1;
+  switch (event.type) {
+    case "PushEvent":
+      return { title: `Pushed ${count} commit${count === 1 ? "" : "s"}`, detail: repo, icon: GitBranch };
+    case "CreateEvent":
+      return { title: `Created a ${event.payload.ref_type || "repository reference"}`, detail: repo, icon: Code2 };
+    case "PullRequestEvent":
+      return { title: `${(event.payload.action || "updated").replace(/^./, (c) => c.toUpperCase())} a pull request`, detail: repo, icon: GitBranch };
+    case "IssuesEvent":
+      return { title: `${(event.payload.action || "updated").replace(/^./, (c) => c.toUpperCase())} an issue`, detail: repo, icon: CircleDot };
+    case "WatchEvent":
+      return { title: "Starred a repository", detail: repo, icon: Star };
+    case "ForkEvent":
+      return { title: "Forked a repository", detail: repo, icon: GitFork };
+    case "ReleaseEvent":
+      return { title: "Published a release", detail: repo, icon: Zap };
+    default:
+      return { title: event.type.replace("Event", " event"), detail: repo, icon: Activity };
+  }
+}
+
+function StatCard({
+  label,
+  value,
+  note,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  note: string;
+  icon: typeof Github;
+  tone: string;
+}) {
+  return (
+    <div className="stat-card">
+      <div className="stat-card-top">
+        <span className={`stat-icon ${tone}`}><Icon size={17} strokeWidth={1.8} /></span>
+        <span className="stat-note">{note}</span>
+      </div>
+      <strong>{value}</strong>
+      <span className="stat-label">{label}</span>
+    </div>
+  );
+}
+
+function RepoCard({ repo, index }: { repo: GitHubRepository; index: number }) {
+  const title = repo.name.replace(/[-_]/g, " ");
+  const description = projectDescriptions[repo.name] || repo.description || "Public repository — explore the source, implementation and project history.";
+  return (
+    <a
+      className="repo-card"
+      href={repo.html_url}
+      target="_blank"
+      rel="noreferrer"
+      style={{ animationDelay: `${index * 65}ms` }}
+    >
+      <div className="repo-card-head">
+        <span className="repo-folder"><Code2 size={17} /></span>
+        <span className="repo-external"><ArrowUpRight size={16} /></span>
+      </div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <div className="repo-topics">
+        {repo.language && <span className="language-chip"><i style={{ background: languageColors[repo.language] || "#8a9aaa" }} />{repo.language}</span>}
+        {repo.topics.slice(0, 2).map((topic) => <span key={topic} className="topic-chip">{topic}</span>)}
+      </div>
+      <div className="repo-card-footer">
+        <span><Star size={13} /> {number(repo.stargazers_count)}</span>
+        <span><GitFork size={13} /> {number(repo.forks_count)}</span>
+        <span className="repo-updated">Updated {relativeDate(repo.pushed_at || repo.updated_at)}</span>
+      </div>
+    </a>
+  );
+}
+
+function LoadingDashboard() {
+  return (
+    <main className="page-shell">
+      <div className="loading-top"><div className="loading-mark" /><div className="loading-line" /></div>
+      <div className="loading-hero skeleton" />
+      <div className="loading-stats">{[1, 2, 3, 4].map((item) => <div className="skeleton" key={item} />)}</div>
+      <div className="loading-grid">{[1, 2, 3, 4, 5, 6].map((item) => <div className="skeleton" key={item} />)}</div>
+    </main>
+  );
+}
+
 export default function Home() {
-  const { user: authUser } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [repos, setRepos] = useState<Repository[]>([]);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("All");
+  const [sortMode, setSortMode] = useState<"recent" | "stars">("recent");
 
-  useEffect(() => {
-    // Fetch GitHub data from the report
-    const mockProfile: UserProfile = {
-      login: 'Adarsh-Singh-Chauhan',
-      name: 'Adarsh Singh',
-      avatar_url: 'https://avatars.githubusercontent.com/u/175235397?v=4',
-      bio: 'Developer passionate about building innovative solutions',
-      email: 'adarshsinghchauhan904@gmail.com',
-      followers: 1,
-      following: 4,
-      public_repos: 3,
-      created_at: '2024-07-10T15:15:43Z',
-      html_url: 'https://github.com/Adarsh-Singh-Chauhan',
-    };
+  const loadDashboard = useCallback(async (force = false) => {
+    const cached = !force ? sessionStorage.getItem(CACHE_KEY) : null;
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as { savedAt: number; data: DashboardData };
+        if (Date.now() - parsed.savedAt < CACHE_TTL) {
+          setData(parsed.data);
+          setIsLoading(false);
+          setError(null);
+          return;
+        }
+      } catch {
+        sessionStorage.removeItem(CACHE_KEY);
+      }
+    }
 
-    const mockRepos: Repository[] = [
-      {
-        name: 'Disease-Prediction-ML',
-        description: 'ML based disease prediction project',
-        stargazerCount: 1,
-        updatedAt: '2026-02-25T21:29:33Z',
-        html_url: 'https://github.com/Adarsh-Singh-Chauhan/Disease-Prediction-ML',
-        forks: 2,
-        watchers: 5,
-        linesOfCode: 3847,
-      },
-      {
-        name: 'dristhi',
-        description: 'A comprehensive project repository',
-        stargazerCount: 0,
-        updatedAt: '2025-10-13T14:52:21Z',
-        html_url: 'https://github.com/Adarsh-Singh-Chauhan/dristhi',
-        forks: 1,
-        watchers: 3,
-        linesOfCode: 5621,
-      },
-      {
-        name: '-LearnToEarn.project',
-        description: 'Educational learning platform',
-        stargazerCount: 0,
-        updatedAt: '2024-12-21T09:03:23Z',
-        html_url: 'https://github.com/Adarsh-Singh-Chauhan/-LearnToEarn.project',
-        forks: 3,
-        watchers: 8,
-        linesOfCode: 7234,
-      },
-    ];
+    const controller = new AbortController();
+    setIsRefreshing(true);
+    setError(null);
 
-    setProfile(mockProfile);
-    setRepos(mockRepos);
-    setIsLoading(false);
+    try {
+      const [profile, rawRepositories, rawEvents] = await Promise.all([
+        githubGet<GitHubProfile>(`https://api.github.com/users/${USERNAME}`, controller.signal),
+        githubGet<GitHubRepository[]>(`https://api.github.com/users/${USERNAME}/repos?type=owner&sort=updated&per_page=100`, controller.signal),
+        githubGet<GitHubEvent[]>(`https://api.github.com/users/${USERNAME}/events/public?per_page=30`, controller.signal).catch(() => [] as GitHubEvent[]),
+      ]);
+
+      const repositories = rawRepositories
+        .filter((repo) => !repo.fork && !repo.archived)
+        .sort((a, b) => new Date(b.pushed_at || b.updated_at).getTime() - new Date(a.pushed_at || a.updated_at).getTime());
+
+      const languageTotals: Record<string, number> = {};
+      await Promise.all(
+        repositories.slice(0, 7).map(async (repo) => {
+          try {
+            const languages = await githubGet<Record<string, number>>(repo.languages_url, controller.signal);
+            Object.entries(languages).forEach(([name, bytes]) => {
+              languageTotals[name] = (languageTotals[name] || 0) + bytes;
+            });
+          } catch {
+            // A missing language endpoint should not prevent the dashboard from loading.
+          }
+        }),
+      );
+
+      const languages = Object.entries(languageTotals)
+        .map(([name, bytes]) => ({ name, bytes }))
+        .sort((a, b) => b.bytes - a.bytes)
+        .slice(0, 6);
+
+      const next: DashboardData = {
+        profile,
+        repositories,
+        events: rawEvents.filter((event) => event.type !== "PublicEvent").slice(0, 8),
+        languages,
+        fetchedAt: new Date().toISOString(),
+      };
+
+      setData(next);
+      setError(null);
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: next }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load GitHub data.");
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
   }, []);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
+
+  const filteredRepositories = useMemo(() => {
+    if (!data) return [];
+    const filtered = data.repositories.filter((repo) => {
+      const searchText = `${repo.name} ${repo.description || ""} ${repo.language || ""} ${repo.topics.join(" ")}`.toLowerCase();
+      return searchText.includes(query.toLowerCase()) && (languageFilter === "All" || repo.language === languageFilter);
     });
-  };
+    return [...filtered].sort((a, b) => sortMode === "stars"
+      ? b.stargazers_count - a.stargazers_count
+      : new Date(b.pushed_at || b.updated_at).getTime() - new Date(a.pushed_at || a.updated_at).getTime());
+  }, [data, languageFilter, query, sortMode]);
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return num.toString();
-  };
+  const totalStars = data?.repositories.reduce((sum, repo) => sum + repo.stargazers_count, 0) || 0;
+  const totalForks = data?.repositories.reduce((sum, repo) => sum + repo.forks_count, 0) || 0;
+  const languagesTotal = data?.languages.reduce((sum, language) => sum + language.bytes, 0) || 1;
+  const languageOptions = ["All", ...(data?.languages.map((language) => language.name) || [])];
 
-  if (isLoading) {
+  if (isLoading && !data) return <LoadingDashboard />;
+
+  if (!data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading your GitHub dashboard...</p>
+      <main className="page-shell">
+        <div className="error-panel">
+          <div className="eyebrow"><span className="eyebrow-dot" /> GITHUB CONNECTOR / STATUS</div>
+          <h1>Live data is taking a break.</h1>
+          <p>{error || "The GitHub public API did not return a response."}</p>
+          <button className="button button-primary" onClick={() => void loadDashboard(true)}><RefreshCw size={15} /> Try again</button>
+          <a className="text-link" href={GITHUB} target="_blank" rel="noreferrer">Open GitHub profile <ArrowUpRight size={14} /></a>
         </div>
-      </div>
+      </main>
     );
   }
 
+  const profileName = data.profile.name || data.profile.login;
+  const fetchedTime = new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit" }).format(new Date(data.fetchedAt));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Hero Section with Background Image */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663420708640/TkDa2nHLW9JFsmuxJkRCvR/github-dashboard-hero-YQZnMKHCULpvRXZ2NjVqeG.webp"
-            alt="Hero background"
-            className="w-full h-full object-cover"
-          />
+    <main className="page-shell">
+      <header className="site-nav">
+        <a href="#top" className="brand-lockup" aria-label="GitHub dashboard home">
+          <span className="brand-mark"><Terminal size={17} /></span>
+          <span><b>ASC</b><small>GITHUB DASHBOARD</small></span>
+        </a>
+        <nav className="nav-links" aria-label="Primary navigation">
+          <a className="active" href="#overview">Overview</a>
+          <a href="#repositories">Repositories</a>
+          <a href="#stack">Tech stack</a>
+          <a href="#activity">Activity</a>
+        </nav>
+        <div className="nav-actions">
+          <span className="api-status"><i /> LIVE PUBLIC DATA</span>
+          <button className="icon-button" onClick={() => void loadDashboard(true)} disabled={isRefreshing} aria-label="Refresh GitHub data" title="Refresh data">
+            <RefreshCw size={16} className={isRefreshing ? "spin" : ""} />
+          </button>
+          <a className="nav-github" href={GITHUB} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={14} /></a>
         </div>
+      </header>
 
-        <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
-          <div className="text-center mb-12 animate-fade-in">
-            <div className="flex items-center justify-center mb-6">
-              <Github className="w-12 h-12 text-indigo-600" />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4">
-              GitHub Dashboard
-            </h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Showcasing your GitHub profile and repository insights
-            </p>
+      <section className="hero-section" id="overview">
+        <div className="hero-grid-lines" aria-hidden="true" />
+        <div className="hero-copy">
+          <div className="eyebrow"><span className="eyebrow-dot" /> SOFTWARE ENGINEERING / PROFILE 001</div>
+          <div className="hero-kicker">Build with intent. Ship with care.</div>
+          <h1>{profileName}<span className="hero-period">.</span></h1>
+          <div className="hero-role">SOFTWARE DEVELOPMENT ENGINEER <span>·</span> SOFTWARE ENGINEER</div>
+          <p className="hero-description">
+            I build practical digital products across full-stack engineering, AI-enabled applications and software quality.
+            Interested in the details that make software useful, reliable and ready to ship.
+          </p>
+          <div className="hero-focus">
+            <span>FULL-STACK</span><i /> <span>AI &amp; ML</span><i /> <span>AUTOMATION</span><i /> <span>CYBERSECURITY</span>
+          </div>
+          <div className="hero-actions">
+            <a className="button button-primary" href={GITHUB} target="_blank" rel="noreferrer"><Github size={16} /> Explore GitHub <ArrowUpRight size={14} /></a>
+            <a className="button button-secondary" href={LINKEDIN} target="_blank" rel="noreferrer"><Linkedin size={16} /> LinkedIn</a>
+            <a className="button button-quiet" href={`mailto:${EMAIL}`}><Mail size={16} /> Get in touch</a>
           </div>
         </div>
-      </div>
 
-      {/* Profile Card Section */}
-      {profile && (
-        <div className="container mx-auto px-4 py-12">
-          <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <Card className="backdrop-blur-md bg-white/80 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-500 to-cyan-500 h-32"></div>
+        <div className="profile-console">
+          <div className="console-top">
+            <div className="console-lights"><i /><i /><i /></div>
+            <span>profile.runtime</span>
+            <span className="console-live"><i /> SYNCED</span>
+          </div>
+          <div className="profile-identity">
+            <div className="avatar-frame">
+              <img src={data.profile.avatar_url} alt={profileName} />
+              <span className="avatar-presence" />
+            </div>
+            <div className="profile-identity-copy">
+              <strong>{profileName}</strong>
+              <span>@{data.profile.login}</span>
+              <small><MapPin size={12} /> {data.profile.location || "India"}</small>
+            </div>
+          </div>
+          <div className="console-divider" />
+          <div className="console-code">
+            <span className="code-muted">const developer = {"{"}</span>
+            <span><em>role</em>: <b>"Software Development Engineer"</b>,</span>
+            <span><em>focus</em>: <b>["Full-stack", "AI", "Quality"]</b>,</span>
+            <span><em>workflow</em>: <b>["plan", "build", "test", "ship"]</b></span>
+            <span className="code-muted">{"}"};</span>
+          </div>
+          <div className="console-bottom">
+            <span><Activity size={13} /> Public profile data</span>
+            <span>Updated {fetchedTime}</span>
+          </div>
+        </div>
+        <div className="hero-index">01 <span>/ 04</span></div>
+      </section>
 
-              <div className="px-8 pb-8">
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
-                  <div className="flex items-end gap-6 mb-6 md:mb-0">
-                    <img
-                      src={profile.avatar_url}
-                      alt={profile.name}
-                      className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg"
-                    />
-                    <div>
-                      <h2 className="text-3xl font-bold text-slate-900">{profile.name}</h2>
-                      <p className="text-slate-600 flex items-center gap-2 mt-2">
-                        <Github className="w-4 h-4" />
-                        {profile.login}
-                      </p>
-                    </div>
-                  </div>
+      <section className="stats-grid" aria-label="GitHub statistics">
+        <StatCard label="Public repositories" value={number(data.profile.public_repos)} note="ACCOUNT" icon={Layers3} tone="tone-cyan" />
+        <StatCard label="Stars earned" value={number(totalStars)} note="PUBLIC PROJECTS" icon={Star} tone="tone-amber" />
+        <StatCard label="Forks" value={number(totalForks)} note="PUBLIC PROJECTS" icon={GitFork} tone="tone-violet" />
+        <StatCard label="Followers" value={number(data.profile.followers)} note="COMMUNITY" icon={Users} tone="tone-green" />
+      </section>
 
-                  <a
-                    href={profile.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                      View on GitHub
-                    </Button>
+      <section className="section-block" id="repositories">
+        <div className="section-heading">
+          <div>
+            <div className="eyebrow"><span className="eyebrow-dot" /> OPEN SOURCE / 02</div>
+            <h2>Recent repositories<span className="hero-period">.</span></h2>
+            <p>Public work, pulled directly from GitHub. Open a project to see its code and history.</p>
+          </div>
+          <a className="section-link" href={`${GITHUB}?tab=repositories`} target="_blank" rel="noreferrer">All repositories <ArrowUpRight size={15} /></a>
+        </div>
+
+        <div className="repo-toolbar">
+          <label className="repo-search"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a repository..." aria-label="Search repositories" /><kbd>/</kbd></label>
+          <div className="repo-controls">
+            <select value={languageFilter} onChange={(event) => setLanguageFilter(event.target.value)} aria-label="Filter by language">
+              {languageOptions.map((language) => <option key={language}>{language}</option>)}
+            </select>
+            <button className={sortMode === "recent" ? "sort-button selected" : "sort-button"} onClick={() => setSortMode("recent")}>Recently updated</button>
+            <button className={sortMode === "stars" ? "sort-button selected" : "sort-button"} onClick={() => setSortMode("stars")}>Most stars</button>
+          </div>
+        </div>
+
+        {filteredRepositories.length ? (
+          <div className="repo-grid">
+            {filteredRepositories.slice(0, 9).map((repo, index) => <RepoCard repo={repo} index={index} key={repo.id} />)}
+          </div>
+        ) : (
+          <div className="empty-state"><Search size={19} /><strong>No matching repositories</strong><span>Try another name or language.</span></div>
+        )}
+        <div className="section-footnote"><span>{filteredRepositories.length} repositories shown</span><span>Forks and archived projects are excluded from this showcase.</span></div>
+      </section>
+
+      <section className="lower-grid">
+        <div className="section-panel activity-panel" id="activity">
+          <div className="panel-heading">
+            <div><div className="eyebrow"><span className="eyebrow-dot" /> RECENT SIGNAL</div><h2>Public activity</h2></div>
+            <span className="panel-tag">GITHUB EVENTS</span>
+          </div>
+          {data.events.length ? (
+            <div className="activity-list">
+              {data.events.slice(0, 7).map((event) => {
+                const entry = eventDescription(event);
+                const Icon = entry.icon;
+                return (
+                  <a className="activity-row" href={`https://github.com/${event.repo.name}`} target="_blank" rel="noreferrer" key={event.id}>
+                    <span className="activity-icon"><Icon size={15} /></span>
+                    <span className="activity-copy"><strong>{entry.title}</strong><small>{entry.detail}</small></span>
+                    <time>{relativeDate(event.created_at)}</time>
+                    <ArrowUpRight size={13} className="activity-arrow" />
                   </a>
-                </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="empty-state compact"><Activity size={18} /><strong>No recent public events returned.</strong><span>GitHub may temporarily have no events in its public feed.</span></div>
+          )}
+          <a className="panel-footer-link" href={`${GITHUB}?tab=activity`} target="_blank" rel="noreferrer">View GitHub activity <ArrowUpRight size={14} /></a>
+        </div>
 
-                {profile.bio && (
-                  <p className="text-slate-700 mb-6 text-lg">{profile.bio}</p>
-                )}
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <GitFork className="w-5 h-5 text-indigo-600" />
-                      <span className="text-sm text-slate-600">Repositories</span>
-                    </div>
-                    <p className="text-2xl font-bold text-indigo-600">{profile.public_repos}</p>
+        <div className="section-panel languages-panel" id="stack">
+          <div className="panel-heading">
+            <div><div className="eyebrow"><span className="eyebrow-dot" /> TOOLING / 03</div><h2>Language mix</h2></div>
+            <span className="panel-tag">BY BYTE COUNT</span>
+          </div>
+          {data.languages.length ? (
+            <div className="language-list">
+              {data.languages.map((language) => {
+                const percent = (language.bytes / languagesTotal) * 100;
+                return (
+                  <div className="language-row" key={language.name}>
+                    <div className="language-row-top"><span><i style={{ background: languageColors[language.name] || "#8a9aaa" }} />{language.name}</span><b>{percent.toFixed(1)}%</b></div>
+                    <div className="language-track"><span style={{ width: `${percent}%`, background: languageColors[language.name] || "#8a9aaa" }} /></div>
                   </div>
-
-                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4 border border-cyan-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="w-5 h-5 text-cyan-600" />
-                      <span className="text-sm text-slate-600">Followers</span>
-                    </div>
-                    <p className="text-2xl font-bold text-cyan-600">{profile.followers}</p>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Eye className="w-5 h-5 text-indigo-600" />
-                      <span className="text-sm text-slate-600">Following</span>
-                    </div>
-                    <p className="text-2xl font-bold text-indigo-600">{profile.following}</p>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4 border border-cyan-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-5 h-5 text-cyan-600" />
-                      <span className="text-sm text-slate-600">Joined</span>
-                    </div>
-                    <p className="text-sm font-bold text-cyan-600">{formatDate(profile.created_at)}</p>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                {profile.email && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Mail className="w-4 h-4" />
-                    <a href={`mailto:${profile.email}`} className="hover:text-indigo-600 transition-colors">
-                      {profile.email}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="empty-state compact"><Code2 size={18} /><strong>Language data unavailable.</strong><span>Try refreshing the dashboard.</span></div>
+          )}
+          <div className="stack-cloud">
+            {stack.map((skill) => <span key={skill}>{skill}</span>)}
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Repositories Section */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">Recent Repositories</h2>
-          <p className="text-slate-600">Explore the latest projects and contributions</p>
+      <section className="journey-section">
+        <div className="section-heading">
+          <div><div className="eyebrow"><span className="eyebrow-dot" /> THE ENGINEERING JOURNEY / 04</div><h2>What I work on<span className="hero-period">.</span></h2></div>
+          <span className="section-index">Bhopal, India</span>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {repos.map((repo, index) => (
-            <div
-              key={repo.name}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${(index + 1) * 100}ms` }}
-            >
-              <a
-                href={repo.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block h-full"
-              >
-                <Card className="backdrop-blur-md bg-white/80 border border-white/20 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 h-full overflow-hidden group cursor-pointer">
-                  {/* Accent background */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-indigo-500 to-cyan-500 transition-opacity duration-300"></div>
-
-                  <div className="relative z-10 p-6 h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors flex-1">
-                        {repo.name}
-                      </h3>
-                      {repo.stargazerCount > 0 && (
-                        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-200">
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          <span className="text-sm font-semibold text-yellow-700">
-                            {repo.stargazerCount}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <p className="text-slate-600 mb-4 flex-1">
-                      {repo.description || 'No description available'}
-                    </p>
-
-                    {/* Language Badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {getRepositoryLanguages(repo.name).map((language) => (
-                        <LanguageBadge key={language} language={language} size="sm" />
-                      ))}
-                    </div>
-
-                    {/* Repository Statistics */}
-                    <div className="grid grid-cols-3 gap-2 mb-4 py-3 px-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200">
-                      <div className="text-center">
-                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
-                          <GitFork className="w-3 h-3" />
-                          Forks
-                        </div>
-                        <div className="text-lg font-bold text-indigo-600">{formatNumber(repo.forks)}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
-                          <Eye className="w-3 h-3" />
-                          Watch
-                        </div>
-                        <div className="text-lg font-bold text-cyan-600">{formatNumber(repo.watchers)}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
-                          <Code2 className="w-3 h-3" />
-                          Lines
-                        </div>
-                        <div className="text-lg font-bold text-purple-600">{formatNumber(repo.linesOfCode)}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                      <span className="text-sm text-slate-500">
-                        Updated {formatDate(repo.updatedAt)}
-                      </span>
-                      <Github className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                    </div>
-                  </div>
-                </Card>
-              </a>
-            </div>
-          ))}
+        <div className="journey-grid">
+          <article className="journey-card">
+            <span className="journey-icon"><BriefcaseBusiness size={18} /></span>
+            <div className="journey-meta">MAY — OCT 2026</div>
+            <h3>SDE Intern · CONORG</h3>
+            <p>Software and web application development, functional and regression testing, defect tracking, deployment support and technical documentation.</p>
+            <span className="journey-status"><Check size={12} /> Internship completed</span>
+          </article>
+          <article className="journey-card">
+            <span className="journey-icon"><GraduationCap size={19} /></span>
+            <div className="journey-meta">EXPECTED 2027</div>
+            <h3>B.Tech · Computer Science</h3>
+            <p>Sagar Institute of Research &amp; Technology, Bhopal · Computer Science &amp; Engineering (Cyber Security).</p>
+            <span className="journey-status">Learning in progress</span>
+          </article>
+          <article className="journey-card">
+            <span className="journey-icon"><Sparkles size={18} /></span>
+            <div className="journey-meta">CURRENT INTERESTS</div>
+            <h3>Build, test, improve</h3>
+            <p>Full-stack systems, AI applications, agentic automation, cybersecurity and cloud delivery—with AI-assisted prototyping and engineering review.</p>
+            <span className="journey-status">Always learning</span>
+          </article>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <div className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-12 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <p className="mb-2">GitHub Connector Dashboard</p>
-          <p className="text-indigo-100">Powered by GitHub API • Built with React & Tailwind CSS</p>
-        </div>
-      </div>
-
-      {/* Animations */}
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out forwards;
-          opacity: 0;
-        }
-
-        span[title]:hover {
-          transform: scale(1.1);
-        }
-      `}</style>
-    </div>
+      <footer className="site-footer">
+        <a href="#top" className="footer-brand"><span className="brand-mark"><Terminal size={16} /></span><b>ASC / ENGINEERING</b></a>
+        <span>Public GitHub data · Refreshed {fetchedTime}</span>
+        <div><a href={GITHUB} target="_blank" rel="noreferrer">GitHub</a><a href={LINKEDIN} target="_blank" rel="noreferrer">LinkedIn</a><a href={`mailto:${EMAIL}`}>Email</a></div>
+      </footer>
+      <div className="page-bottom-line"><span>DESIGNED FOR BUILDERS</span><span>ADARSH SINGH CHAUHAN · 2026</span><span>DATA SOURCE: GITHUB PUBLIC API</span></div>
+      {error && <div className="soft-error"><span>{error}</span><button onClick={() => void loadDashboard(true)}>Retry</button></div>}
+    </main>
   );
 }
