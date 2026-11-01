@@ -1,51 +1,49 @@
 <div align="center">
 
-# Adarsh Singh Chauhan · GitHub Dashboard
+# Adarsh Singh Chauhan
 
-[![Live Dashboard](https://img.shields.io/badge/OPEN%20LIVE%20DASHBOARD-Visit%20Vercel-9BCB70?style=for-the-badge&logo=vercel&logoColor=111111)](https://github-dashboard-olive-one.vercel.app/)
-[![GitHub](https://img.shields.io/badge/GitHub-Adarsh--Singh--Chauhan-161b22?style=flat&logo=github)](https://github.com/Adarsh-Singh-Chauhan)
-[![Live data](https://img.shields.io/badge/Data-GitHub%20Public%20API-2f855a?style=flat&logo=github)](https://docs.github.com/en/rest)
-[![Built with React](https://img.shields.io/badge/Built%20with-React%2019-149eca?style=flat&logo=react)](https://react.dev/)
-[![Deployed on Vercel](https://img.shields.io/badge/Deploy-Vercel-111111?style=flat&logo=vercel)](https://vercel.com/)
+**Software Developer · Full-stack Products · AI-enabled Applications**
 
-**Live URL:** https://github-dashboard-olive-one.vercel.app/
+[![Open live dashboard](https://img.shields.io/badge/OPEN%20LIVE%20DASHBOARD-github--dashboard--olive--one.vercel.app-9fc7b0?style=for-the-badge&logo=vercel&logoColor=111111)](https://github-dashboard-olive-one.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Adarsh--Singh--Chauhan-20252d?style=flat&logo=github)](https://github.com/Adarsh-Singh-Chauhan)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-20252d?style=flat&logo=linkedin)](https://www.linkedin.com/in/adarsh-singh-5189b9283/)
+
+*A live, data-driven snapshot of my public engineering work.*
 
 </div>
 
-A live view of my public GitHub profile, repositories, languages and recent activity.
-
 ---
 
-## Overview
+## About this project
 
-This project turns a public GitHub profile into a useful engineering dashboard. It fetches profile and repository information directly from GitHub's public REST API, then presents it in a searchable, responsive interface.
+GitHub Dashboard is a compact engineering portfolio built around my public GitHub profile. It brings repository activity, project signals and the technologies I work with into one place—without turning the page into a wall of badges or vanity metrics.
 
-The visual direction is intentionally restrained: graphite surfaces, clear typography, compact metadata and subtle motion—more like a developer's workspace than a template-heavy landing page.
+The interface uses clear hierarchy, restrained colour, readable project cards and motion that supports navigation rather than competing with the content.
 
-## What it shows
+## What you can explore
 
-- **Profile snapshot** — avatar, public profile details and follower counts.
-- **Repository explorer** — public repositories with search, language filtering and sorting.
-- **Repository signals** — stars, forks, primary language and last update time.
-- **Language mix** — language distribution calculated from public repository byte counts.
-- **Recent activity** — recent events returned by GitHub's public events endpoint.
-- **Engineering profile** — current focus areas, selected skills and career context.
-- **Responsive layout** — desktop, tablet and mobile layouts with reduced-motion support.
+- **Profile overview** — public GitHub profile details and community metrics.
+- **Repository explorer** — search, filter by language and sort public repositories.
+- **Project signals** — stars, forks, primary language and recent update time.
+- **Language breakdown** — a byte-count view based on repository language data.
+- **Public activity** — recent events returned by GitHub's public events API.
+- **Engineering journey** — selected experience, learning focus and areas of work.
+- **Responsive interface** — desktop, tablet and mobile layouts, with reduced-motion support.
 
-## Tech stack
+## Built with
 
-| Area | Technologies |
+| Layer | Tools |
 | --- | --- |
-| UI | React 19, TypeScript, Vite |
-| Styling | Tailwind CSS 4, custom CSS design system |
-| Motion & interaction | CSS transitions and accessible micro-interactions |
+| Frontend | React 19, TypeScript, Vite |
+| Styling | Tailwind CSS 4, custom CSS |
+| Interaction | Framer Motion, CSS transitions |
 | Icons | Lucide React |
-| Data | GitHub REST API (public endpoints) |
-| Hosting | Vercel |
+| Data | GitHub REST API |
+| Deployment | Vercel |
 
 ## Run locally
 
-Requirements: Node.js 20+ and pnpm.
+**Requirements:** Node.js 20+ and pnpm.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -58,32 +56,28 @@ Create a production build:
 pnpm run build
 ```
 
-The Vite frontend is generated in `dist/public`. The dashboard uses public GitHub endpoints and does not require a personal access token or expose private repository data.
+The Vite build output is generated in `dist/public`. The dashboard reads public GitHub endpoints and does not require a personal access token.
 
-## Data notes
+## Data & limitations
 
-- Repository cards include public, non-fork, non-archived repositories.
-- Repository counts and follower counts come from the GitHub profile endpoint.
-- Stars, forks and language byte counts are aggregated from public repositories.
-- Recent activity reflects GitHub's public events feed; it is not a complete contribution history.
-- GitHub unauthenticated API limits apply. The dashboard caches successful data in the current browser session for a short period.
+- Only public GitHub profile and repository information is requested.
+- Forked and archived repositories are excluded from the repository showcase.
+- Language percentages are calculated from the language byte counts returned for the repositories queried.
+- GitHub's public events endpoint is a short, incomplete activity feed—not a complete contribution history.
+- Unauthenticated GitHub API rate limits apply. A short browser-session cache helps avoid unnecessary requests.
+- Metrics are fetched from GitHub at runtime; values are not hard-coded.
 
-## Deployment
+## Live deployment
 
-Production is built as a static Vite site on Vercel and is connected to this GitHub repository.
+<https://github-dashboard-olive-one.vercel.app/>
 
-- **Production URL:** https://github-dashboard-olive-one.vercel.app/
-- **Branch:** `main`
-- **Build:** `pnpm run build`
-- **Output:** `dist/public`
-
-Vercel creates production deployments from the latest GitHub `main` commit. The frontend uses GitHub's public REST API; private repository data is not requested.
+Production is connected to the `main` branch on Vercel. New commits pushed to the repository trigger a deployment.
 
 ---
 
 <div align="center">
 
-Built by **Adarsh Singh Chauhan** · Software Development Engineer
+**Built by Adarsh Singh Chauhan**
 
 [GitHub](https://github.com/Adarsh-Singh-Chauhan) · [LinkedIn](https://www.linkedin.com/in/adarsh-singh-5189b9283/) · [Portfolio](https://adarsh-engineering-portfolio-rust.vercel.app/)
 
