@@ -330,3 +330,50 @@ button { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Editorial refinement: quieter surfaces, deliberate motion, less dashboard chrome */
+:root {
+  --bg: #0d1218; --bg-raised: #121a22; --panel: #141e27; --panel-2: #19242e;
+  --line: rgba(190,207,219,.12); --line-strong: rgba(190,207,219,.22);
+  --text: #edf1f3; --muted: #a0adb6; --muted-2: #74838d;
+  --cyan: #83c5c6; --lime: #c1d69a; --amber: #d9b77e; --violet: #aaa4c7;
+  --radius: 14px;
+}
+body {
+  background: radial-gradient(ellipse at 12% -8%, rgba(90,139,142,.10), transparent 34rem),
+              radial-gradient(ellipse at 94% 12%, rgba(120,119,143,.07), transparent 36rem), var(--bg);
+}
+body::before { opacity: .055; background-size: 44px 44px; }
+.site-nav { background: rgba(13,18,24,.91); }
+.hero-section {
+  border-radius: 15px;
+  background: radial-gradient(ellipse at 88% 48%, rgba(83,137,139,.12), transparent 25rem),
+              linear-gradient(125deg, rgba(20,29,37,.98), rgba(15,22,29,.98) 62%, rgba(23,25,35,.96));
+  animation: editorial-enter .65s cubic-bezier(.2,.7,.2,1) both;
+}
+.hero-grid-lines { opacity: .38; }
+.hero-copy h1 { letter-spacing: -.058em; font-weight: 620; }
+.hero-description { max-width: 590px; color: #b0bbc2; }
+.profile-console {
+  border-color: rgba(183,202,211,.17);
+  background: linear-gradient(155deg, rgba(22,32,41,.97), rgba(15,22,29,.98));
+  box-shadow: 0 24px 70px rgba(0,0,0,.17);
+  animation: editorial-enter .75s .08s cubic-bezier(.2,.7,.2,1) both;
+}
+.stat-card, .section-panel, .journey-card, .repo-card {
+  border-color: rgba(190,207,219,.13); box-shadow: 0 8px 26px rgba(0,0,0,.07);
+}
+.repo-card { border-radius: 10px; }
+.repo-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+.journey-card:hover { transform: translateY(-2px); }
+.button, .nav-github, .icon-button, .sort-button, .repo-controls select { transition-duration: .18s; }
+.section-heading h2, .panel-heading h2 { letter-spacing: -.04em; }
+.eyebrow, .hero-role, .hero-focus, .panel-tag, .journey-meta, .page-bottom-line { letter-spacing: .075em; }
+@keyframes editorial-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-section, .profile-console { animation: none !important; }
+}
